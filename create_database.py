@@ -183,11 +183,11 @@ def generate_top3_brewery_types(main_type):
     types = [main_type]
     remaining = [t for t in BREWERY_TYPES if t != main_type]
     types.extend(random.sample(remaining, min(2, len(remaining))))
-    return ", ".join(types)
+    return json.dumps(types)
 
 def generate_top5_beers_recently():
     """Seleciona as 5 cervejas que o cliente mais comprou nos últimos 90 dias"""
-    return ", ".join(random.sample(AB_INBEV_BEERS, 5))
+    return json.dumps(random.sample(AB_INBEV_BEERS, 5))
 
 def generate_top3_breweries_recently(current_brewery_name):
     """Gera lista das 3 cervejarias que o cliente mais comprou nos últimos 90 dias"""
@@ -197,14 +197,14 @@ def generate_top3_breweries_recently(current_brewery_name):
     # Seleciona aleatoriamente 3 cervejarias
     top3 = random.sample(all_breweries, min(3, len(all_breweries)))
     
-    # Retorna como string separada por vírgulas
-    return ", ".join(top3)
+    # Retorna como JSON array
+    return json.dumps(top3)
 
 def create_database():
     """Cria o banco de dados SQLite com 20 clientes"""
     
     # Conecta ao banco (cria se não existe)
-    conn = sqlite3.connect('customers.db')
+    conn = sqlite3.connect('data/customers.db')
     cursor = conn.cursor()
     
     # Remove a tabela antiga se existir
@@ -287,12 +287,12 @@ def create_database():
         print(f"Name: {row[1]}")
         print(f"Location: {row[2]}, {row[3]}")
         print(f"Postal Code: {row[4]}")
-        print(f"Top 3 Brewery Types: {row[5]}")
-        print(f"Top 5 Beers Recently (90 days): {row[6]}")
-        print(f"Top 3 Breweries Recently (90 days): {row[7]}")
+        print(f"Top 3 Brewery Types: {json.loads(row[5])}")
+        print(f"Top 5 Beers Recently (90 days): {json.loads(row[6])}")
+        print(f"Top 3 Breweries Recently (90 days): {json.loads(row[7])}")
     
     conn.close()
-    print(f"\n✓ Banco de dados salvo como 'customers.db'")
+    print(f"\n✓ Banco de dados salvo como 'data/customers.db'")
 
 if __name__ == "__main__":
     create_database()
