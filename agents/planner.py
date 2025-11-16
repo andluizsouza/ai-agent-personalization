@@ -289,13 +289,25 @@ class PlannerAgent:
         try:
             logger.info(f"Starting planner execution for client: {client_id}")
             
-            # Build input message
-            input_message = f"O client_id é: {client_id}. Execute o plano completo de 5 passos para fazer a recomendação."
+            # Filter chat history to get only the last user message
+            # This prevents the agent from being confused by previous responses
+            if chat_history:
+                # Get only the last user message
+                user_messages = [msg for msg in chat_history if msg.get("role") == "user"]
+                if user_messages:
+                    last_user_message = user_messages[-1].get("content", "")
+                    # Build input with client_id context
+                    input_message = f"Client ID: {client_id}\n\nMensagem do usuário: {last_user_message}"
+                else:
+                    input_message = f"O client_id é: {client_id}. Execute o plano completo de 5 passos para fazer a recomendação."
+            else:
+                input_message = f"O client_id é: {client_id}. Execute o plano completo de 5 passos para fazer a recomendação."
             
-            # Execute agent
+            # Execute agent WITHOUT full history to avoid confusion
+            # The agent should focus on the current request with the confirmed client_id
             result = self.agent_executor.invoke({
                 "input": input_message,
-                "chat_history": chat_history or []
+                "chat_history": []  # Empty history to prevent confusion
             })
             
             execution_time = time.time() - start_time
