@@ -216,7 +216,7 @@ class SQLRunner:
                 result = self._execute_query(sql_query)
                 if result:
                     search_method = "client_id"
-                    logger.info(f"✓ Found client by client_id: {result['client_name']}")
+                    logger.info(f"Found client by client_id: {result['client_name']}")
             except Exception as e:
                 logger.error(f"Error searching by client_id: {e}")
 
@@ -237,7 +237,7 @@ class SQLRunner:
                 if result:
                     search_method = "postal_code_and_name"
                     logger.info(
-                        f"✓ Found client by postal_code AND client_name: {result['client_name']}"
+                        f"Found client by postal_code AND client_name: {result['client_name']}"
                     )
             except Exception as e:
                 logger.error(f"Error searching by postal_code AND client_name: {e}")
@@ -248,12 +248,12 @@ class SQLRunner:
             "sql_query": sql_query,
             "search_method": search_method,
             "result": result,
-            "execution_time_ms": round(execution_time_ms, 2),
+            "execution_time_ms": execution_time_ms,
             "timestamp": timestamp,
         }
 
         if not result:
-            logger.warning("⚠ Client not found with provided search criteria")
+            logger.warning("WARNING: Client not found with provided search criteria")
 
         return response
 

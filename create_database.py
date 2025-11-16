@@ -274,8 +274,8 @@ def create_database():
     # Verifica os dados inseridos
     cursor.execute('SELECT COUNT(*) FROM customers')
     count = cursor.fetchone()[0]
-    print(f"✓ Banco de dados criado com sucesso!")
-    print(f"✓ Total de clientes inseridos: {count}")
+    print(f"OK Banco de dados criado com sucesso!")
+    print(f"OK Total de clientes inseridos: {count}")
     
     # Mostra alguns exemplos
     print("\n--- Exemplos de registros ---")
@@ -292,7 +292,7 @@ def create_database():
         print(f"Top 3 Breweries Recently (90 days): {json.loads(row[7])}")
     
     conn.close()
-    print(f"\n✓ Banco de dados salvo como 'data/customers.db'")
+    print(f"\nOK Banco de dados salvo como 'data/customers.db'")
 
 if __name__ == "__main__":
     create_database()

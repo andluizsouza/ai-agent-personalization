@@ -55,7 +55,7 @@ class BreweryFinder:
     
     def __init__(self):
         """Initialize the Brewery Finder tool."""
-        logger.info("✅ Brewery Finder Tool initialized")
+        logger.info("Brewery Finder Tool initialized")
     
     def _normalize_brewery_name(self, name: str) -> str:
         """
@@ -120,7 +120,7 @@ class BreweryFinder:
             if brewery_type:
                 params["by_type"] = brewery_type.lower()
             
-            logger.info(f"🔍 Calling OpenBreweryDB API: {params}")
+            logger.info(f"Calling OpenBreweryDB API: {params}")
             
             # Make API request
             response = requests.get(
@@ -135,33 +135,33 @@ class BreweryFinder:
                 # API may return dict with message instead of list
                 if isinstance(data, dict) and "message" in data:
                     # API returned a message (e.g., no results or API info)
-                    logger.info(f"✅ API returned message: {data['message']}")
+                    logger.info(f"API returned message: {data['message']}")
                     return {"status": "success", "data": []}
                 elif isinstance(data, list):
-                    logger.info(f"✅ API call successful: {len(data)} breweries found")
+                    logger.info(f"API call successful: {len(data)} breweries found")
                     return {"status": "success", "data": data}
                 else:
                     error_msg = f"Unexpected API response format: {type(data)}"
-                    logger.error(f"❌ {error_msg}")
+                    logger.error(f"{error_msg}")
                     return {"status": "API_ERROR", "error": error_msg}
             else:
                 error_msg = f"API returned status code {response.status_code}"
-                logger.error(f"❌ {error_msg}")
+                logger.error(f"{error_msg}")
                 return {"status": "API_ERROR", "error": error_msg}
                 
         except requests.exceptions.Timeout:
             error_msg = f"API request timeout after {self.REQUEST_TIMEOUT}s"
-            logger.error(f"❌ {error_msg}")
+            logger.error(f"{error_msg}")
             return {"status": "API_ERROR", "error": error_msg}
             
         except requests.exceptions.RequestException as e:
             error_msg = f"API request failed: {str(e)}"
-            logger.error(f"❌ {error_msg}")
+            logger.error(f"{error_msg}")
             return {"status": "API_ERROR", "error": error_msg}
             
         except Exception as e:
             error_msg = f"Unexpected error: {str(e)}"
-            logger.error(f"❌ {error_msg}")
+            logger.error(f"{error_msg}")
             return {"status": "API_ERROR", "error": error_msg}
     
     def _filter_new_breweries(
@@ -186,7 +186,7 @@ class BreweryFinder:
             if brewery_name and self._is_brewery_new(brewery_name, brewery_history):
                 new_breweries.append(brewery)
         
-        logger.info(f"🎯 Filtered to {len(new_breweries)} new breweries (from {len(breweries)} total)")
+        logger.info(f"Filtered to {len(new_breweries)} new breweries (from {len(breweries)} total)")
         return new_breweries
     
     def _format_brewery_result(self, brewery: Dict[str, Any]) -> Dict[str, Any]:
@@ -256,7 +256,7 @@ class BreweryFinder:
             brewery_history = []
         
         logger.info(f"\n{'='*60}")
-        logger.info(f"🔍 BREWERY FINDER - Starting search")
+        logger.info(f"BREWERY FINDER - Starting search")
         logger.info(f"   City: {city}")
         logger.info(f"   State: {state or 'Not specified'}")
         logger.info(f"   Type: {brewery_type or 'Any'}")
@@ -287,7 +287,7 @@ class BreweryFinder:
         # Step 2: Check if any breweries were found
         if not breweries:
             execution_time = time.time() - start_time
-            logger.warning(f"⚠️ NO_BREWERIES: No breweries found in {city}")
+            logger.warning(f"NO_BREWERIES: No breweries found in {city}")
             return {
                 "status": "NO_BREWERIES",
                 "message": f"No breweries found in {city}" + (f", {state}" if state else ""),
@@ -309,7 +309,7 @@ class BreweryFinder:
         # Step 4: Check if any new breweries remain after filtering
         if not new_breweries:
             execution_time = time.time() - start_time
-            logger.warning(f"⚠️ NO_NEW_BREWERIES: All {len(breweries)} breweries already in history")
+            logger.warning(f"NO_NEW_BREWERIES: All {len(breweries)} breweries already in history")
             return {
                 "status": "NO_NEW_BREWERIES",
                 "message": f"All breweries in {city} are already in purchase history",
@@ -331,7 +331,7 @@ class BreweryFinder:
         execution_time = time.time() - start_time
         
         logger.info(f"\n{'='*60}")
-        logger.info(f"✅ BREWERY FINDER - Search completed successfully")
+        logger.info(f"BREWERY FINDER - Search completed successfully")
         logger.info(f"   Total found: {len(breweries)}")
         logger.info(f"   New breweries: {len(formatted_breweries)}")
         logger.info(f"   Execution time: {execution_time:.2f}s")
@@ -390,7 +390,7 @@ def search_breweries_by_location_and_type(
 
 if __name__ == "__main__":
     # Demo/test usage
-    print("\n🍺 Brewery Finder Tool - Demo\n")
+    print("\nBrewery Finder Tool - Demo\n")
     
     # Example 1: Search with full parameters
     print("Example 1: Search for micro breweries in San Diego")
@@ -402,7 +402,7 @@ if __name__ == "__main__":
     )
     
     if result["status"] == "success":
-        print(f"✅ Found {len(result['data'])} new breweries!")
+        print(f"Found {len(result['data'])} new breweries!")
         if result["data"]:
             print(f"\nFirst result: {result['data'][0]['brewery_name']}")
     else:

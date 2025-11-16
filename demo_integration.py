@@ -24,7 +24,7 @@ def print_section(title: str):
 
 def main():
     """Run the integration demo."""
-    print("\n🍺 BEES AI - Tool Integration Demo")
+    print("\n BEES AI - Tool Integration Demo")
     print("   Tool 1 (SQL Runner) + Tool 2 (Brewery Finder)")
     
     # Step 1: Get client profile from database
@@ -43,35 +43,35 @@ def main():
         conn.close()
         
         if not result:
-            print("❌ Error: No clients found in database")
+            print("ERROR Error: No clients found in database")
             print("   Please run create_database.py first to populate the database")
             return
         
         client_id = result[0]
-        print(f"🔍 Found client in database: {result[1]} ({client_id})")
+        print(f" Found client in database: {result[1]} ({client_id})")
         
     except Exception as e:
-        print(f"❌ Error accessing database: {e}")
+        print(f"ERROR Error accessing database: {e}")
         print("   Please ensure customers.db exists in the data/ directory")
         return
     
-    print(f"🔍 Fetching full profile for client: {client_id}")
+    print(f" Fetching full profile for client: {client_id}")
     
     # Get full profile using Tool 1
     profile_result = get_client_profile(client_id=client_id)
     
     # Check if client was found
     if profile_result["search_method"] == "not_found" or not profile_result["result"]:
-        print(f"❌ Error: Client not found in database")
+        print(f"ERROR Error: Client not found in database")
         return
     
     profile = profile_result["result"]
     
-    print(f"✅ Client Found!")
+    print(f"OK Client Found!")
     print(f"   Name: {profile['client_name']}")
     print(f"   Location: {profile['client_city']}, {profile['client_state']}")
     print(f"   Postal Code: {profile['postal_code']}")
-    print(f"\n📊 Preferences:")
+    print(f"\n Preferences:")
     print(f"   Top 3 Brewery Types: {', '.join(profile['top3_brewery_types'])}")
     print(f"   Top 5 Recent Beers:")
     for i, beer in enumerate(profile['top5_beers_recently'], 1):
@@ -83,7 +83,7 @@ def main():
     # Step 2: Search for new breweries
     print_section("STEP 2: Search New Breweries (Tool 2)")
     
-    print(f"🔍 Searching for {profile['top3_brewery_types'][0]} breweries in {profile['client_city']}, {profile['client_state']}")
+    print(f" Searching for {profile['top3_brewery_types'][0]} breweries in {profile['client_city']}, {profile['client_state']}")
     print(f"   Excluding breweries from purchase history...")
     
     brewery_result = search_breweries_by_location_and_type(
@@ -100,13 +100,13 @@ def main():
         breweries = brewery_result["data"]
         metadata = brewery_result["metadata"]
         
-        print(f"✅ Found {len(breweries)} new brewery recommendations!")
+        print(f"OK Found {len(breweries)} new brewery recommendations!")
         print(f"   Total breweries found: {metadata['total_found']}")
         print(f"   Filtered out (already in history): {metadata['filtered_out']}")
         print(f"   Execution time: {metadata['execution_time']}s")
         
         if breweries:
-            print(f"\n🎯 Top 3 Recommendations:")
+            print(f"\nTop 3 Recommendations:")
             for i, brewery in enumerate(breweries[:3], 1):
                 print(f"\n   {i}. {brewery['brewery_name']}")
                 print(f"      Type: {brewery['brewery_type']}")
@@ -117,31 +117,31 @@ def main():
                     print(f"      Website: {brewery['website_url']}")
     
     elif brewery_result["status"] == "NO_BREWERIES":
-        print(f"⚠️ {brewery_result['message']}")
+        print(f"WARNING {brewery_result['message']}")
         print("   Recommendation: Try expanding search to nearby cities or different brewery types.")
     
     elif brewery_result["status"] == "NO_NEW_BREWERIES":
-        print(f"⚠️ {brewery_result['message']}")
+        print(f"WARNING {brewery_result['message']}")
         print(f"   This client already knows all {brewery_result['metadata']['total_found']} local breweries!")
         print("   Recommendation: Consider expanding to nearby cities or different types.")
     
     else:  # API_ERROR
-        print(f"❌ API Error: {brewery_result.get('error', 'Unknown error')}")
+        print(f"ERROR API Error: {brewery_result.get('error', 'Unknown error')}")
         print("   Recommendation: Check internet connection and try again.")
     
     # Step 4: Summary
     print_section("STEP 4: Summary")
     
-    print("📋 Agent Workflow Completed:")
-    print(f"   1. ✅ Retrieved client profile from database")
-    print(f"   2. ✅ Searched OpenBreweryDB API with filters")
-    print(f"   3. ✅ Filtered out {len(profile['top3_breweries_recently'])} known breweries")
+    print(" Agent Workflow Completed:")
+    print(f"   1. OK Retrieved client profile from database")
+    print(f"   2. OK Searched OpenBreweryDB API with filters")
+    print(f"   3. OK Filtered out {len(profile['top3_breweries_recently'])} known breweries")
     if brewery_result["status"] == "success":
-        print(f"   4. ✅ Generated {len(brewery_result['data'])} personalized recommendations")
+        print(f"   4. OK Generated {len(brewery_result['data'])} personalized recommendations")
     else:
-        print(f"   4. ⚠️ No new recommendations available")
+        print(f"   4. WARNING No new recommendations available")
     
-    print(f"\n💡 Next Steps:")
+    print(f"\n Next Steps:")
     print(f"   • Implement Tool 3 (Web Explorer) to get brewery details")
     print(f"   • Create Planner Agent to orchestrate all 3 tools")
     print(f"   • Add conditional logic (ask user if they want details)")

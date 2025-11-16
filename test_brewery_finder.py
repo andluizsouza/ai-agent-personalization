@@ -233,5 +233,5 @@ class TestBreweryFinder:
 
 if __name__ == "__main__":
     # Run tests with pytest
-    print("\n🧪 Running Brewery Finder Tests\n")
+    print("\nRunning Brewery Finder Tests\n")
     pytest.main([__file__, "-v", "--tb=short"])
