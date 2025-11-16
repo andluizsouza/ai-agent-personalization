@@ -1,56 +1,38 @@
-# Core AI & ML
+# Core Dependencies
 langchain>=0.1.0
-langchain-google-genai>=0.0.6
-google-generativeai>=0.3.0
+langchain-google-genai>=1.0.0
+langchain-community>=0.0.20
+langchain-core>=0.1.0
 
-# Vector Database
+# Google AI
+google-generativeai>=0.3.0
+google-genai>=0.4.0
+
+# Vector Store
 faiss-cpu>=1.7.4
 
-# Data Processing & Web
+# Web Scraping
 beautifulsoup4>=4.12.0
 requests>=2.31.0
-lxml>=4.9.0
-html5lib>=1.1
 
 # Database
 sqlalchemy>=2.0.0
 
-# CLI Interface
-rich>=13.7.0
-prompt-toolkit>=3.0.0
-
-# API Framework
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-pydantic>=2.5.0
-pydantic-settings>=2.1.0
-python-multipart>=0.0.6
-
-# API Security & Rate Limiting
-slowapi>=0.1.9
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
-
-# Session Management (optional, for production)
-redis>=5.0.0
-
-# Async Support
-asyncio-timeout>=4.0.0
-aiohttp>=3.9.0
-
 # Utilities
 python-dotenv>=1.0.0
-pyyaml>=6.0.0
+
+# CLI Interface (for main.py)
+rich>=13.7.0
+
+# API (for FastAPI - Phase 3)
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
 
 # Testing
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
-httpx>=0.25.0  # For testing FastAPI
 
-# Development
-black>=23.0.0
-flake8>=6.0.0
-mypy>=1.7.0
-
-# Logging & Monitoring
-structlog>=23.2.0
+# Formatting
+black>=23.9.1
+isort>=5.12.0
