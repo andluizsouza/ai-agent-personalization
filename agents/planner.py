@@ -148,30 +148,58 @@ class PlannerAgent:
                 return str({"error": "TOOL_ERROR", "message": str(e)})
         
         @tool
-        def search_breweries_tool(city: str, state: str, brewery_type: str, brewery_history: List[str]) -> str:
+        def search_breweries_tool(
+            city: Optional[str] = None,
+            state: Optional[str] = None,
+            brewery_type: Optional[str] = None,
+            brewery_history: Optional[List[str]] = None,
+            brewery_name: Optional[str] = None,
+            filter_history: bool = True
+        ) -> str:
             """
-            Search for new breweries in a specific location and type.
+            Search for breweries by location, type, or specific name. Returns comprehensive information.
             
-            This tool automatically filters out breweries from the client's purchase history.
+            This tool can search for NEW breweries (with filtering) or get information about 
+            KNOWN breweries (without filtering).
             
             Args:
-                city: City name (e.g., 'San Diego', 'Bend')
-                state: State name (e.g., 'California', 'Oregon')
-                brewery_type: Type of brewery ('micro', 'brewpub', 'regional', 'large', etc.)
-                brewery_history: List of brewery names the client already purchased from
+                city: City name (optional if brewery_name provided, e.g., 'San Diego', 'Bend')
+                state: State name (optional, e.g., 'California', 'Oregon')
+                brewery_type: Type of brewery (optional, e.g., 'micro', 'brewpub', 'regional')
+                brewery_history: List of brewery names to filter out (only used if filter_history=True)
+                brewery_name: Specific brewery name to search for (optional)
+                filter_history: True to exclude known breweries (new recommendations), 
+                               False to include all (for known brewery info lookup)
             
             Returns:
-                JSON string with brewery suggestion or error message
+                JSON string with comprehensive brewery information including:
+                - Name, type, ID
+                - Complete address (address_1, address_2, address_3, street)
+                - City, state, postal code, country
+                - Phone number, website URL
+                - Coordinates (latitude, longitude)
+                - "Unavailable" for missing fields
+            
+            Examples:
+                - New recommendations: city="San Diego", filter_history=True
+                - Favorite brewery info: brewery_name="Odell Brewing", filter_history=False
+                - Phone number: brewery_name="Stone Brewing", filter_history=False
             """
-            logger.info(f"Tool 2 called: search_breweries(city={city}, state={state}, type={brewery_type})")
+            logger.info(f"Tool 2 called: search_breweries(city={city}, state={state}, type={brewery_type}, name={brewery_name}, filter={filter_history})")
             start_time = time.time()
             
             try:
+                # Set default for brewery_history
+                if brewery_history is None:
+                    brewery_history = []
+                
                 result = search_breweries_by_location_and_type(
                     city=city,
                     state=state,
                     brewery_type=brewery_type,
-                    brewery_history=brewery_history
+                    brewery_history=brewery_history,
+                    brewery_name=brewery_name,
+                    filter_history=filter_history
                 )
                 execution_time = (time.time() - start_time) * 1000
                 
@@ -183,6 +211,8 @@ class PlannerAgent:
                         "city": city,
                         "state": state,
                         "brewery_type": brewery_type,
+                        "brewery_name": brewery_name,
+                        "filter_history": filter_history,
                         "history_count": len(brewery_history)
                     },
                     "execution_time_ms": execution_time,

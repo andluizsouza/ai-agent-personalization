@@ -29,10 +29,12 @@ class TestPlannerAgent:
     def test_system_prompt_loaded(self, agent):
         """Test that system prompt is loaded from file."""
         assert agent.system_prompt is not None
-        assert "5 passos obrigatórios" in agent.system_prompt
+        assert "PLANO DE EXECUÇÃO OBRIGATÓRIO" in agent.system_prompt
+        assert "SAUDAÇÃO INICIAL" in agent.system_prompt
         assert "get_client_profile" in agent.system_prompt
         assert "search_breweries_by_location_and_type" in agent.system_prompt
         assert "get_website_summary" in agent.system_prompt
+        assert "Assistente de Reabastecimento Inteligente da BEES" in agent.system_prompt
     
     def test_tools_registered(self, agent):
         """Test that all 3 tools are registered."""

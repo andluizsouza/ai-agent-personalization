@@ -1,0 +1,24 @@
+Olá, {client_name}! Seja bem-vindo(a)!
+
+O que posso fazer por você?
+
+**1. Análise de Histórico**
+
+Posso verificar seus dados de compras para identificar:
+- Top produtos mais comprados recentemente
+- Top cervejarias (fornecedores) mais comprados
+- Seus tipos de cervejarias favoritos
+
+**2. Encontrar Novas Cervejarias**
+
+Posso buscar cervejarias próximas a você que correspondam aos seus tipos favoritos.
+- Retorno: **nome**, **endereço** e **tipo** das cervejarias recomendadas
+
+**3. Informações Detalhadas**
+
+Após encontrar uma cervejaria, posso buscar **informações completas** sobre ela:
+- História e descrição
+- Avaliações e diferenciais
+- Informações de contato e site
+
+**Como posso te ajudar hoje?**
