@@ -148,6 +148,65 @@ class PlannerAgent:
                 return str({"error": "TOOL_ERROR", "message": str(e)})
         
         @tool
+        def run_analytical_query_tool(question: str, authenticated_client_id: str) -> str:
+            """
+            Run analytical/statistical queries on customer database with privacy protection.
+            
+            PRIVACY RULES:
+            1. ALLOWED: Questions about authenticated user's OWN data
+               Examples: "What beers do I buy most?", "What's my favorite brewery?"
+            
+            2. ALLOWED: Aggregate/statistical questions (no individual client data)
+               Examples: "What's the most popular beer in Ohio?", 
+                        "How many clients prefer micro breweries?",
+                        "What's the average purchase in California?"
+            
+            3. BLOCKED: Questions about OTHER specific clients' individual data
+               Examples: "What does client X buy?", "What's client Y's favorite brewery?"
+            
+            Use this tool for:
+            - Aggregate analysis (counts, averages, group by state/city/type)
+            - The authenticated client's own detailed data
+            - Statistical insights across customer base
+            
+            Args:
+                question: Natural language analytical question
+                authenticated_client_id: The authenticated client's ID (ALWAYS use the client_id from context)
+            
+            Returns:
+                JSON string with query results or privacy violation error
+            """
+            logger.info(f"Tool 1B called: run_analytical_query(question={question})")
+            start_time = time.time()
+            
+            try:
+                from tools.sql_runner import run_analytical_query
+                
+                result = run_analytical_query(
+                    question=question,
+                    authenticated_client_id=authenticated_client_id
+                )
+                execution_time = (time.time() - start_time) * 1000
+                
+                # Log execution
+                self.execution_log.append({
+                    "tool": "run_analytical_query",
+                    "timestamp": datetime.now().isoformat(),
+                    "input": {
+                        "question": question,
+                        "authenticated_client_id": authenticated_client_id
+                    },
+                    "execution_time_ms": execution_time,
+                    "status": "success" if result.get("privacy_compliant") else "blocked",
+                    "privacy_compliant": result.get("privacy_compliant", False)
+                })
+                
+                return str(result)
+            except Exception as e:
+                logger.error(f"Tool 1B failed: {e}")
+                return str({"error": "TOOL_ERROR", "message": str(e)})
+        
+        @tool
         def search_breweries_tool(
             city: Optional[str] = None,
             state: Optional[str] = None,
@@ -271,7 +330,12 @@ class PlannerAgent:
                 logger.error(f"Tool 3 failed: {e}")
                 return str({"error": "TOOL_ERROR", "message": str(e)})
         
-        return [get_client_profile_tool, search_breweries_tool, get_website_summary_tool]
+        return [
+            get_client_profile_tool, 
+            run_analytical_query_tool,
+            search_breweries_tool, 
+            get_website_summary_tool
+        ]
     
     def _create_agent(self) -> AgentExecutor:
         """

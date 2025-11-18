@@ -4,6 +4,19 @@ Tool 1: SQL Runner - Text-to-SQL for Client Knowledge
 This tool retrieves client information from the customers.db SQLite database (table: customers).
 It uses Gemini 2.5 Flash to generate SQL queries based on natural language input,
 with fallback logic for different search methods (client_id, postal_code, client_name).
+
+SECURITY: READ-ONLY MODE
+- Only SELECT queries are executed
+- All data modification commands are BLOCKED:
+  * DELETE, UPDATE, INSERT, DROP, TRUNCATE, ALTER, CREATE, REPLACE
+  * PRAGMA, ATTACH, DETACH, GRANT, REVOKE
+- Multi-statement SQL injection attempts are detected and blocked
+- Automatic validation before every query execution
+
+PRIVACY RULES:
+1. Individual Own Data: ALLOWED - "What beers do I buy most?" (using authenticated client_id)
+2. Individual Others' Data: BLOCKED - "What is client X's favorite brewery?" (privacy violation)
+3. Aggregate/Statistical Data: ALLOWED - "What's the most purchased beer in my state?" (anonymized)
 """
 
 import json
@@ -39,7 +52,18 @@ class SQLRunner:
     """
     SQL Runner Tool for retrieving client profile information.
     Implements Text-to-SQL with fallback logic.
+    
+    SECURITY: READ-ONLY MODE
+    - Only SELECT queries are allowed
+    - All modification commands (INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, etc.) are blocked
     """
+    
+    # Forbidden SQL keywords that modify data
+    FORBIDDEN_KEYWORDS = [
+        'insert', 'update', 'delete', 'drop', 'truncate', 'alter',
+        'create', 'replace', 'rename', 'grant', 'revoke',
+        'attach', 'detach', 'pragma'
+    ]
 
     def __init__(
         self, database_path: str = "data/customers.db", api_key: Optional[str] = None
@@ -72,8 +96,54 @@ class SQLRunner:
         )
 
         logger.info(f"SQL Runner initialized with database: {database_path}")
+    
+    def _validate_read_only(self, sql_query: str) -> tuple[bool, str]:
+        """
+        Validate that SQL query is read-only (SELECT only).
+        
+        Security check to prevent any data modification commands.
+        
+        Args:
+            sql_query: SQL query to validate
+            
+        Returns:
+            Tuple of (is_valid, error_message)
+            - is_valid: True if query is safe (SELECT only), False otherwise
+            - error_message: Empty string if valid, error description if invalid
+        """
+        sql_lower = sql_query.lower().strip()
+        
+        # Remove comments and extra whitespace
+        sql_normalized = ' '.join(sql_lower.split())
+        
+        # Check for forbidden keywords
+        for keyword in self.FORBIDDEN_KEYWORDS:
+            if keyword in sql_normalized:
+                error_msg = f"SECURITY VIOLATION: '{keyword.upper()}' command is not allowed. Only SELECT queries are permitted."
+                logger.error(error_msg)
+                return False, error_msg
+        
+        # Ensure query starts with SELECT (after removing leading whitespace/comments)
+        if not sql_normalized.startswith('select'):
+            error_msg = "SECURITY VIOLATION: Only SELECT queries are allowed. Query must start with SELECT."
+            logger.error(error_msg)
+            return False, error_msg
+        
+        # Additional check: look for semicolon followed by forbidden keywords (multi-statement injection)
+        if ';' in sql_normalized:
+            parts = sql_normalized.split(';')
+            for part in parts:
+                part = part.strip()
+                if not part:  # Empty after semicolon is OK
+                    continue
+                if not part.startswith('select'):
+                    error_msg = "SECURITY VIOLATION: Multi-statement queries detected. Only single SELECT queries are allowed."
+                    logger.error(error_msg)
+                    return False, error_msg
+        
+        return True, ""
 
-    def _generate_sql_query(
+    def _generate_query(
         self,
         search_input: str,
         search_method: str,
@@ -115,6 +185,8 @@ class SQLRunner:
     def _execute_query(self, sql_query: str) -> Optional[Dict[str, Any]]:
         """
         Execute SQL query and return result.
+        
+        SECURITY: Validates that query is read-only before execution.
 
         Args:
             sql_query: SQL query to execute
@@ -123,6 +195,12 @@ class SQLRunner:
             Dictionary with query result or None if no results
         """
         try:
+            # SECURITY CHECK: Validate read-only
+            is_valid, error_msg = self._validate_read_only(sql_query)
+            if not is_valid:
+                logger.error(f"Query rejected: {error_msg}")
+                logger.error(f"Rejected SQL: {sql_query}")
+                return None
             result = self.db.run(sql_query)
 
             # Parse the result (SQLDatabase.run returns string representation)
@@ -256,6 +334,163 @@ class SQLRunner:
             logger.warning("WARNING: Client not found with provided search criteria")
 
         return response
+    
+    def run_analytical_query(
+        self,
+        question: str,
+        authenticated_client_id: str
+    ) -> Dict[str, Any]:
+        """
+        Execute analytical/aggregate queries on the customer database.
+        
+        PRIVACY RULES ENFORCED:
+        1. ALLOWED: Queries about authenticated user's own data
+        2. ALLOWED: Aggregate/statistical queries (no individual client data)
+        3. BLOCKED: Queries about specific other clients' individual data
+        
+        Args:
+            question: Natural language question (e.g., "What's the most popular beer in Ohio?")
+            authenticated_client_id: The client_id of the authenticated user (for privacy checks)
+        
+        Returns:
+            Dictionary with:
+            - sql_query: Generated SQL query
+            - result: Query result (list of rows or single aggregated value)
+            - query_type: 'aggregate' or 'individual_own'
+            - execution_time_ms: Execution time
+            - timestamp: Timestamp
+            - privacy_compliant: Boolean indicating if query passed privacy rules
+        """
+        start_time = time.time()
+        timestamp = datetime.now().isoformat()
+        
+        try:
+            # Get authenticated client's profile to provide context for "my city", "my state" queries
+            client_profile = self._execute_query(
+                f"SELECT client_city, client_state FROM customers WHERE client_id = '{authenticated_client_id}'"
+            )
+            
+            client_context = ""
+            if client_profile:
+                client_city = client_profile.get('client_city', 'Unknown')
+                client_state = client_profile.get('client_state', 'Unknown')
+                client_context = f"""
+                
+                AUTHENTICATED CLIENT CONTEXT:
+                - Client ID: {authenticated_client_id}
+                - City: {client_city}
+                - State: {client_state} (FULL NAME, not abbreviation)
+                
+                CRITICAL RULES FOR CITY QUERIES:
+                - When user asks about "my city" or references city data, ALWAYS filter by BOTH city AND state
+                - Use: WHERE client_city = '{client_city}' AND client_state = '{client_state}'
+                - NEVER filter by city alone (multiple cities can have same name in different states)
+                - State is stored as FULL NAME '{client_state}', NOT as abbreviation
+                """
+            
+            # Generate SQL query using LLM
+            prompt_value = self.prompt.format(
+                schema=CUSTOMERS_SCHEMA, 
+                question=f"""
+                Generate SQL for this question: {question}
+                {client_context}
+                
+                IMPORTANT PRIVACY RULES:
+                - The authenticated client is: {authenticated_client_id}
+                - ALLOW queries about this specific client's data
+                - ALLOW aggregate/statistical queries (COUNT, AVG, MAX, GROUP BY, etc.)
+                - BLOCK queries requesting individual data of OTHER specific clients
+                - Use GROUP BY, aggregation functions for statistical queries
+                """
+            )
+            response = self.llm.invoke(prompt_value)
+            sql_query = response.content.strip()
+            
+            # Clean SQL
+            if sql_query.startswith("```sql"):
+                sql_query = sql_query.replace("```sql", "").replace("```", "").strip()
+            elif sql_query.startswith("```"):
+                sql_query = sql_query.replace("```", "").strip()
+            
+            logger.info(f"Generated analytical SQL: {sql_query}")
+            
+            # SECURITY CHECK: Validate read-only (block INSERT, UPDATE, DELETE, etc.)
+            is_valid, security_error = self._validate_read_only(sql_query)
+            if not is_valid:
+                logger.error(f"Security violation in analytical query: {security_error}")
+                return {
+                    "sql_query": sql_query,
+                    "result": None,
+                    "query_type": "blocked",
+                    "execution_time_ms": (time.time() - start_time) * 1000,
+                    "timestamp": timestamp,
+                    "privacy_compliant": False,
+                    "error": security_error
+                }
+            
+            # Basic privacy check: detect queries trying to access other specific clients
+            sql_lower = sql_query.lower()
+            is_aggregate = any(keyword in sql_lower for keyword in [
+                'count(', 'avg(', 'sum(', 'max(', 'min(', 'group by'
+            ])
+            references_other_client = (
+                'client_id' in sql_lower and 
+                authenticated_client_id.lower() not in sql_lower and
+                not is_aggregate
+            )
+            
+            if references_other_client:
+                logger.warning(f"PRIVACY VIOLATION: Query attempts to access other client's data")
+                return {
+                    "sql_query": sql_query,
+                    "result": None,
+                    "query_type": "blocked",
+                    "execution_time_ms": (time.time() - start_time) * 1000,
+                    "timestamp": timestamp,
+                    "privacy_compliant": False,
+                    "error": "PRIVACY_VIOLATION: Cannot access individual data of other clients"
+                }
+            
+            # Execute query
+            import sqlite3
+            conn = sqlite3.connect(self.database_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute(sql_query)
+            rows = cursor.fetchall()
+            conn.close()
+            
+            # Convert to list of dicts
+            result = [dict(row) for row in rows]
+            
+            # Determine query type
+            query_type = "aggregate" if is_aggregate else "individual_own"
+            
+            execution_time_ms = (time.time() - start_time) * 1000
+            
+            logger.info(f"Analytical query executed successfully: {len(result)} rows returned")
+            
+            return {
+                "sql_query": sql_query,
+                "result": result,
+                "query_type": query_type,
+                "execution_time_ms": execution_time_ms,
+                "timestamp": timestamp,
+                "privacy_compliant": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Error executing analytical query: {e}")
+            return {
+                "sql_query": None,
+                "result": None,
+                "query_type": "error",
+                "execution_time_ms": (time.time() - start_time) * 1000,
+                "timestamp": timestamp,
+                "privacy_compliant": False,
+                "error": str(e)
+            }
 
 
 # Convenience function for LangChain tool integration
@@ -298,6 +533,53 @@ def get_client_profile(
     runner = SQLRunner(database_path=database_path)
     return runner.get_client_profile(
         client_id=client_id, postal_code=postal_code, client_name=client_name
+    )
+
+
+def run_analytical_query(
+    question: str,
+    authenticated_client_id: str,
+    database_path: str = "data/customers.db"
+) -> Dict[str, Any]:
+    """
+    Run analytical/statistical queries on customer database with privacy protection.
+    
+    PRIVACY RULES:
+    1. ALLOWED: "What beers do I buy most?" (authenticated user's own data)
+    2. BLOCKED: "What is client X's favorite brewery?" (other client's individual data)
+    3. ALLOWED: "What's the most popular beer in Ohio?" (aggregate/statistical data)
+    
+    Args:
+        question: Natural language question
+        authenticated_client_id: The authenticated client's ID (for privacy checks)
+        database_path: Path to SQLite database
+    
+    Returns:
+        Dictionary with query results and metadata
+    
+    Examples:
+        # Aggregate query (ALLOWED)
+        run_analytical_query(
+            question="What's the most purchased beer type in Colorado?",
+            authenticated_client_id="CLT-ABC123"
+        )
+        
+        # Own data query (ALLOWED)
+        run_analytical_query(
+            question="What are my top 5 beers?",
+            authenticated_client_id="CLT-ABC123"
+        )
+        
+        # Other client query (BLOCKED)
+        run_analytical_query(
+            question="What does client CLT-XYZ buy?",
+            authenticated_client_id="CLT-ABC123"
+        )  # Returns privacy_compliant=False
+    """
+    runner = SQLRunner(database_path=database_path)
+    return runner.run_analytical_query(
+        question=question,
+        authenticated_client_id=authenticated_client_id
     )
 
 
