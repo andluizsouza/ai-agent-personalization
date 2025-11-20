@@ -1,7 +1,7 @@
 """
-BEES AI - CLI Conversacional
+BeerForYou - CLI Conversacional
 
-Interface de linha de comando interativa para o Assistente de Reabastecimento Inteligente.
+Interface de linha de comando interativa para o Assistente de Recomendações Personalizadas.
 
 Features:
 - Chat conversacional com contexto persistente
@@ -46,7 +46,7 @@ console = Console()
 
 class ConversationalCLI:
     """
-    Conversational CLI for the BEES AI Assistant.
+    Conversational CLI for the BeerForYou Assistant.
     
     Manages interactive chat sessions with the planner agent,
     handles special commands, and provides rich terminal UI.
@@ -467,7 +467,7 @@ class ConversationalCLI:
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="BEES AI - Assistente de Reabastecimento Inteligente"
+        description="BeerForYou - Assistente de Recomendações Personalizadas"
     )
     parser.add_argument(
         '--client_id',

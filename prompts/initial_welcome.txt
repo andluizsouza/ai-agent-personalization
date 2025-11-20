@@ -1,8 +1,8 @@
-# BEES AI - Assistente de Reabastecimento Inteligente
+# BeerForYou - Assistente de Recomendações Personalizadas
 
-Olá! Bem-vindo ao seu assistente pessoal da BEES. 
+Olá! Bem-vindo ao seu assistente pessoal de cervejarias. 
 
-Estou aqui para ajudar você a descobrir novas cervejarias locais e gerenciar seus pedidos semanais de forma inteligente.
+Estou aqui para ajudar você a descobrir novas cervejarias locais personalizadas de acordo com suas preferências.
 
 
 **Comandos Especiais**:
