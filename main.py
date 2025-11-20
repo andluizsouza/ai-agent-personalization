@@ -29,10 +29,6 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt, Confirm
 from rich.markdown import Markdown
-from rich.live import Live
-from rich.spinner import Spinner
-from rich import print as rprint
-from rich.progress import Progress, SpinnerColumn, TextColumn
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
