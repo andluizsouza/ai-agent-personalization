@@ -16,14 +16,6 @@ class Message:
     role: str  # 'user' or 'assistant'
     content: str
     timestamp: datetime = field(default_factory=datetime.now)
-    
-    def to_dict(self) -> Dict:
-        """Convert message to dictionary."""
-        return {
-            "role": self.role,
-            "content": self.content,
-            "timestamp": self.timestamp.isoformat()
-        }
 
 
 class ChatSession:
@@ -119,20 +111,4 @@ class ChatSession:
             "user_messages": user_messages,
             "assistant_messages": assistant_messages,
             "created_at": self.created_at.isoformat()
-        }
-    
-    def to_dict(self) -> Dict:
-        """
-        Convert session to dictionary.
-        
-        Returns:
-            Complete session data
-        """
-        return {
-            "session_id": self.session_id,
-            "client_id": self.client_id,
-            "created_at": self.created_at.isoformat(),
-            "messages": [m.to_dict() for m in self.messages],
-            "metadata": self.metadata,
-            "stats": self.get_stats()
         }

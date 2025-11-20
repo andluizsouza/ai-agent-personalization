@@ -20,7 +20,6 @@ Usage:
 import os
 import sys
 import argparse
-import asyncio
 import signal
 from pathlib import Path
 from typing import Optional
@@ -321,49 +320,6 @@ class ConversationalCLI:
         
         console.print(table)
         console.print()
-    
-    async def get_user_input_with_timeout(self, timeout: int = 30) -> Optional[str]:
-        """
-        Get user input with timeout for conditional questions.
-        
-        Args:
-            timeout: Timeout in seconds
-            
-        Returns:
-            User input or None if timeout
-        """
-        try:
-            # Create a task for getting input
-            loop = asyncio.get_event_loop()
-            
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[yellow]Aguardando resposta... (timeout em {task.fields[remaining]}s)[/yellow]"),
-                console=console
-            ) as progress:
-                task = progress.add_task("waiting", remaining=timeout)
-                
-                # Use run_in_executor for blocking input
-                input_task = loop.run_in_executor(None, Prompt.ask, "[bold cyan]Você[/bold cyan]")
-                
-                # Wait with timeout
-                for remaining in range(timeout, 0, -1):
-                    progress.update(task, remaining=remaining)
-                    
-                    # Check if input is ready
-                    done, pending = await asyncio.wait([input_task], timeout=1)
-                    
-                    if done:
-                        return await input_task
-                
-                # Timeout reached
-                console.print("\n[yellow]Tempo esgotado! Continuando sem detalhes...[/yellow]\n")
-                return None
-                
-        except Exception as e:
-            if self.debug:
-                console.print(f"[red]Erro no timeout: {e}[/red]")
-            return None
     
     def process_message(self, user_message: str) -> Optional[str]:
         """

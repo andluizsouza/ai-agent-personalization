@@ -51,26 +51,4 @@ def load_prompt(filename: str, prompts_dir: Optional[Path] = None) -> str:
         raise
 
 
-def list_available_prompts(prompts_dir: Optional[Path] = None) -> list[str]:
-    """
-    List all available prompt files in the prompts/ directory.
-    
-    Args:
-        prompts_dir: Optional custom path to prompts directory
-        
-    Returns:
-        List of prompt filenames
-        
-    Example:
-        >>> prompts = list_available_prompts()
-        >>> print(prompts)
-        ['customers_schema.txt', 'sql_generation.txt', 'planner.MD', ...]
-    """
-    if prompts_dir is None:
-        prompts_dir = Path(__file__).parent.parent / "prompts"
-    
-    try:
-        return [f.name for f in prompts_dir.iterdir() if f.is_file()]
-    except Exception as e:
-        logger.error(f"Error listing prompts directory: {e}")
-        return []
+

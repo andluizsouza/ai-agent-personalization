@@ -281,26 +281,6 @@ class WebExplorer:
             "brewery_type": brewery_type,
             "execution_time_ms": (time.time() - start_time) * 1000
         }
-        
-        # Return result
-        return {
-            "brewery_name": brewery_name,
-            "url": url,
-            "summary": summary,
-            "source": "web_search",
-            "cache_status": cache_status,
-            "brewery_type": brewery_type,
-            "execution_time_ms": (time.time() - start_time) * 1000
-        }
-    
-    def get_cache_stats(self) -> Dict:
-        """
-        Get cache statistics.
-        
-        Returns:
-            Dictionary with cache stats
-        """
-        return self.rag_manager.get_cache_stats()
 
 
 # Convenience function for direct use
