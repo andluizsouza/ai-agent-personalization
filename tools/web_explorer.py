@@ -25,8 +25,8 @@ Benefits:
 - 99% cost reduction with cache strategy
 """
 
-import os
 import logging
+import os
 import time
 from typing import Dict, Optional
 from urllib.parse import urlparse
@@ -34,8 +34,8 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from utils.rag_manager import RAGManager
 from utils.prompt_loader import load_prompt
+from utils.rag_manager import RAGManager
 
 # Load environment variables from .env file
 load_dotenv()
@@ -46,27 +46,27 @@ logger = logging.getLogger(__name__)
 class WebExplorer:
     """
     Tool for retrieving and summarizing brewery website content.
-    
+
     Uses a RAG cache (FAISS) with TTL to minimize API calls.
     Falls back to Gemini Grounding (Google Search) when cache misses occur.
-    
+
     Advantages over web scraping:
     - More reliable (no HTML parsing issues)
     - Always up-to-date information
     - Respects website access restrictions
     - Leverages Google's search quality
     """
-    
+
     def __init__(
         self,
         index_path: str = "data/faiss_index",
         ttl_days: int = 30,
         gemini_model: str = "gemini-2.5-flash",
-        temperature: float = 0
+        temperature: float = 0,
     ):
         """
         Initialize Web Explorer.
-        
+
         Args:
             index_path: Path to FAISS index
             ttl_days: Cache TTL in days
@@ -78,7 +78,7 @@ class WebExplorer:
         if not api_key:
             logger.error("GOOGLE_API_KEY not found in environment")
             raise ValueError("GOOGLE_API_KEY environment variable is required")
-        
+
         # Initialize RAG Manager
         try:
             self.rag_manager = RAGManager(index_path=index_path, ttl_days=ttl_days)
@@ -86,25 +86,24 @@ class WebExplorer:
         except Exception as e:
             logger.error(f"Failed to initialize RAG Manager: {e}")
             raise
-        
+
         # Initialize Gemini for summarization
         try:
             self.llm = ChatGoogleGenerativeAI(
-                model=gemini_model,
-                temperature=temperature
+                model=gemini_model, temperature=temperature
             )
             logger.info(f"Initialized Gemini model: {gemini_model}")
         except Exception as e:
             logger.error(f"Failed to initialize Gemini: {e}")
             raise
-    
+
     def _is_valid_url(self, url: str) -> bool:
         """
         Validate URL format.
-        
+
         Args:
             url: URL to validate
-            
+
         Returns:
             True if valid, False otherwise
         """
@@ -113,92 +112,90 @@ class WebExplorer:
             return all([result.scheme, result.netloc])
         except Exception:
             return False
-    
 
-    def _grounded_search_summary(self, brewery_name: str, address: str, url: str) -> Optional[str]:
+    def _grounded_search_summary(
+        self, brewery_name: str, address: str, url: str
+    ) -> Optional[str]:
         """
         Use Gemini with Google Search Grounding to get a concise summary of the brewery.
-        
+
         Uses the new Google GenAI SDK with google_search tool for Gemini 2.5 Flash.
         Reference: https://ai.google.dev/gemini-api/docs/google-search
-        
+
         Args:
             brewery_name: Name of the brewery
             address: Address of the brewery (city, state, street, etc.)
             url: Website URL
-            
+
         Returns:
             Short summary string or None if failed
         """
         try:
-            logger.info(f"Using Gemini Grounding for: {brewery_name} | {address} | {url}")
-            
+            logger.info(
+                f"Using Gemini Grounding for: {brewery_name} | {address} | {url}"
+            )
+
             # Load prompt template from external file
-            prompt_template = load_prompt('web_explorer.txt')
+            prompt_template = load_prompt("web_explorer.txt")
             # Replace variables in template
             prompt = prompt_template.format(
-                brewery_name=brewery_name,
-                address=address,
-                url=url
+                brewery_name=brewery_name, address=address, url=url
             )
-            
+
             # Use the new Google GenAI SDK with google_search tool
             # Reference: https://ai.google.dev/gemini-api/docs/google-search
             from google import genai
             from google.genai import types
-            
+
             # Initialize client
             client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
-            
+
             # Configure grounding tool
-            grounding_tool = types.Tool(
-                google_search=types.GoogleSearch()
-            )
-            
+            grounding_tool = types.Tool(google_search=types.GoogleSearch())
+
             config = types.GenerateContentConfig(
-                tools=[grounding_tool],
-                temperature=0  # Deterministic output
+                tools=[grounding_tool], temperature=0  # Deterministic output
             )
-            
+
             # Generate content with grounding
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=config
+                model="gemini-2.5-flash", contents=prompt, config=config
             )
-            
+
             summary = response.text.strip()
-            
+
             # Log grounding metadata if available
             if response.candidates and response.candidates[0].grounding_metadata:
                 metadata = response.candidates[0].grounding_metadata
                 if metadata.web_search_queries:
-                    logger.info(f"Grounding queries used: {metadata.web_search_queries}")
+                    logger.info(
+                        f"Grounding queries used: {metadata.web_search_queries}"
+                    )
                 if metadata.grounding_chunks:
                     logger.info(f"Sources found: {len(metadata.grounding_chunks)}")
-            
+
             logger.info(f"Grounded summary generated: {len(summary)} characters")
             return summary
-            
+
         except Exception as e:
             logger.error(f"Failed to generate grounded summary: {e}")
             return None
-    
+
     def get_website_summary(
         self,
         brewery_name: str,
         url: str,
         brewery_type: str = "unknown",
-        address: str = ""
+        address: str = "",
     ) -> Dict:
         """
         Get website summary, using cache or fetching from web.
-        
+
         Args:
             brewery_name: Name of the brewery
             url: Website URL
             brewery_type: Type of brewery (micro, brewpub, etc.)
-            
+
         Returns:
             Dictionary with summary and metadata:
             {
@@ -224,12 +221,11 @@ class WebExplorer:
                 "cache_status": "N/A",
                 "brewery_type": brewery_type,
                 "execution_time_ms": (time.time() - start_time) * 1000,
-                "error": "INVALID_URL"
+                "error": "INVALID_URL",
             }
         # Step 1: Search cache
         cached_result, cache_status = self.rag_manager.search_cache(
-            query=brewery_name,
-            brewery_name=brewery_name
+            query=brewery_name, brewery_name=brewery_name
         )
         # Step 2: Handle cache hit (valid data)
         if cache_status == "CACHE_HIT" and cached_result:
@@ -241,14 +237,14 @@ class WebExplorer:
                 "source": "cache_hit",
                 "cache_status": cache_status,
                 "brewery_type": brewery_type,
-                "execution_time_ms": (time.time() - start_time) * 1000
+                "execution_time_ms": (time.time() - start_time) * 1000,
             }
         # Step 3: Handle cache miss or stale - use Gemini Grounding
-        logger.info(f"Cache {cache_status.lower()} for {brewery_name}, using Gemini Grounding fallback")
+        logger.info(
+            f"Cache {cache_status.lower()} for {brewery_name}, using Gemini Grounding fallback"
+        )
         summary = self._grounded_search_summary(
-            brewery_name=brewery_name,
-            address=address,
-            url=url
+            brewery_name=brewery_name, address=address, url=url
         )
         if not summary:
             error_msg = f"Não foi possível gerar resumo para {brewery_name} via Gemini Grounding"
@@ -261,7 +257,7 @@ class WebExplorer:
                 "cache_status": cache_status,
                 "brewery_type": brewery_type,
                 "execution_time_ms": (time.time() - start_time) * 1000,
-                "error": "GROUNDING_FAILED"
+                "error": "GROUNDING_FAILED",
             }
         # Step 4: Update cache
         if cache_status in ["CACHE_MISS", "CACHE_STALE"]:
@@ -269,7 +265,7 @@ class WebExplorer:
                 brewery_name=brewery_name,
                 url=url,
                 summary=summary,
-                brewery_type=brewery_type
+                brewery_type=brewery_type,
             )
             if cache_updated:
                 self.rag_manager.save_index()
@@ -283,16 +279,13 @@ class WebExplorer:
             "source": "web_search",
             "cache_status": cache_status,
             "brewery_type": brewery_type,
-            "execution_time_ms": (time.time() - start_time) * 1000
+            "execution_time_ms": (time.time() - start_time) * 1000,
         }
 
 
 # Convenience function for direct use
 def get_website_summary(
-    brewery_name: str,
-    url: str,
-    brewery_type: str = "unknown",
-    address: str = ""
+    brewery_name: str, url: str, brewery_type: str = "unknown", address: str = ""
 ) -> Dict:
     """
     Convenience function to get website summary using Gemini Grounding.

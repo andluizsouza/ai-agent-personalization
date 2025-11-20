@@ -15,19 +15,19 @@ logger = logging.getLogger(__name__)
 def load_prompt(filename: str, prompts_dir: Optional[Path] = None) -> str:
     """
     Load prompt content from a file in the prompts/ directory.
-    
+
     Args:
         filename: Name of the file to load (e.g., 'sql_generation.txt')
         prompts_dir: Optional custom path to prompts directory.
                     If not provided, uses default '../prompts' relative to this file.
-    
+
     Returns:
         Content of the prompt file as a string
-        
+
     Raises:
         FileNotFoundError: If the prompt file doesn't exist
         Exception: For other I/O errors
-        
+
     Example:
         >>> schema = load_prompt("customers_schema.txt")
         >>> prompt = load_prompt("sql_generation.txt")
@@ -35,11 +35,11 @@ def load_prompt(filename: str, prompts_dir: Optional[Path] = None) -> str:
     if prompts_dir is None:
         # Default: prompts/ at project root
         prompts_dir = Path(__file__).parent.parent / "prompts"
-    
+
     prompt_path = prompts_dir / filename
-    
+
     try:
-        with open(prompt_path, 'r', encoding='utf-8') as f:
+        with open(prompt_path, "r", encoding="utf-8") as f:
             content = f.read()
         logger.debug(f"Successfully loaded prompt from: {prompt_path}")
         return content
@@ -49,6 +49,3 @@ def load_prompt(filename: str, prompts_dir: Optional[Path] = None) -> str:
     except Exception as e:
         logger.error(f"Error loading prompt file {filename}: {e}")
         raise
-
-
-
