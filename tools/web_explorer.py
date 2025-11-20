@@ -130,31 +130,13 @@ class WebExplorer:
             logger.info(f"Using Gemini Grounding for: {brewery_name} | {address} | {url}")
             
             # Load prompt template from external file
-            try:
-                prompt_template = load_prompt('web_explorer.txt')
-                # Replace variables in template
-                prompt = prompt_template.format(
-                    brewery_name=brewery_name,
-                    address=address,
-                    url=url
-                )
-            except Exception as e:
-                logger.error(f"Failed to load prompt template: {e}")
-                # Fallback to inline prompt
-                prompt = f"""Você é um especialista em cervejarias. Pesquise e traga informações atualizadas sobre a cervejaria abaixo.
-
-Cervejaria: {brewery_name}
-Endereço: {address}
-Site: {url}
-
-Com base nas informações encontradas, crie um resumo conciso (máximo 3 frases) em português brasileiro, focando em:
-- Tipo de cervejaria (micro, regional, brewpub, etc.)
-- Principais estilos de cerveja produzidos
-- Diferenciais e características únicas
-
-Se não encontrar informações suficientes, informe isso de forma clara.
-
-Resumo:"""
+            prompt_template = load_prompt('web_explorer.txt')
+            # Replace variables in template
+            prompt = prompt_template.format(
+                brewery_name=brewery_name,
+                address=address,
+                url=url
+            )
             
             # Use the new Google GenAI SDK with google_search tool
             # Reference: https://ai.google.dev/gemini-api/docs/google-search
