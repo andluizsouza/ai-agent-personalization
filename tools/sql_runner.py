@@ -600,35 +600,3 @@ def run_analytical_query(
     return runner.run_analytical_query(
         question=question, authenticated_client_id=authenticated_client_id
     )
-
-
-if __name__ == "__main__":
-    # Test the SQL Runner
-    print("=" * 80)
-    print("Testing SQL Runner Tool")
-    print("=" * 80)
-
-    # Test 1: Search by client_id
-    print("\n[Test 1] Search by client_id='C001':")
-    result = get_client_profile(client_id="C001")
-    print(json.dumps(result, indent=2))
-
-    # Test 2: Search by postal_code
-    print("\n[Test 2] Search by postal_code='92101':")
-    result = get_client_profile(postal_code="92101")
-    print(json.dumps(result, indent=2))
-
-    # Test 3: Search by client_name
-    print("\n[Test 3] Search by client_name='Bar':")
-    result = get_client_profile(client_name="Bar")
-    print(json.dumps(result, indent=2))
-
-    # Test 4: Search with fallback (invalid client_id, valid postal_code)
-    print("\n[Test 4] Fallback test (invalid client_id, valid postal_code):")
-    result = get_client_profile(client_id="INVALID", postal_code="92101")
-    print(json.dumps(result, indent=2))
-
-    # Test 5: Not found
-    print("\n[Test 5] Not found test:")
-    result = get_client_profile(client_id="INVALID")
-    print(json.dumps(result, indent=2))
