@@ -84,8 +84,7 @@ class PlannerAgent:
         # Initialize LLM
         self.llm = ChatGoogleGenerativeAI(
             model=model_name,
-            temperature=temperature,
-            convert_system_message_to_human=True
+            temperature=temperature
         )
         logger.info(f"Initialized Gemini model: {model_name}")
         
@@ -345,10 +344,10 @@ class PlannerAgent:
             AgentExecutor instance
         """
         # Create prompt template
+        # Note: Gemini models work best with system instructions embedded in the first human message
         prompt = ChatPromptTemplate.from_messages([
-            ("system", self.system_prompt),
             MessagesPlaceholder(variable_name="chat_history", optional=True),
-            ("human", "{input}"),
+            ("human", f"{self.system_prompt}\n\n{{input}}"),
             MessagesPlaceholder(variable_name="agent_scratchpad")
         ])
         
