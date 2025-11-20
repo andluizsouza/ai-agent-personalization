@@ -40,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from agents import create_planner_agent, PlannerAgent
 from utils.chat_session import ChatSession
+from utils.prompt_loader import load_prompt
 
 console = Console()
 
@@ -77,22 +78,7 @@ class ConversationalCLI:
     
     def print_welcome(self):
         """Print welcome message."""
-        welcome_text = """
-# 🍺 BEES AI - Assistente de Reabastecimento Inteligente
-
-Olá! Bem-vindo ao seu assistente pessoal da BEES. 
-
-Estou aqui para ajudar você a descobrir novas cervejarias locais e gerenciar seus pedidos semanais de forma inteligente.
-
-
-**Comandos Especiais**:
-- `/exit` ou `/quit` - Sair do chat
-- `/clear` - Limpar histórico da conversa
-- `/log` - Mostrar Chain-of-Thought da última execução
-- `/metrics` - Mostrar métricas da sessão
-- `/help` - Mostrar esta ajuda
-
-"""
+        welcome_text = load_prompt('initial_welcome.txt')
         
         console.print(Panel(
             Markdown(welcome_text),
@@ -102,41 +88,36 @@ Estou aqui para ajudar você a descobrir novas cervejarias locais e gerenciar se
     
     def print_client_welcome(self, client_name: str):
         """
-        Print personalized welcome message after client identification.
-        Loads message from prompts/welcome_message.txt
+        Print personalized interaction options after client identification.
+        Loads message from prompts/interaction_options.txt
         
         Args:
             client_name: Name of the identified client
         """
-        try:
-            # Load welcome message template
-            welcome_file = Path(__file__).parent / "prompts" / "welcome_message.txt"
-            
-            if not welcome_file.exists():
-                console.print("[yellow]Arquivo de boas-vindas não encontrado.[/yellow]")
-                return
-            
-            with open(welcome_file, 'r', encoding='utf-8') as f:
-                welcome_template = f.read()
-            
-            # Replace {client_name} placeholder
-            welcome_message = welcome_template.replace("{client_name}", client_name)
-            
-            # Display with rich formatting
-            console.print()
-            console.print(Panel(
-                Markdown(welcome_message),
-                border_style="green",
-                padding=(1, 2),
-                title="[bold green]Bem-vindo![/bold green]",
-                subtitle="[dim]Comandos: /help | /exit[/dim]"
-            ))
-            console.print()
-            
-        except Exception as e:
-            console.print(f"[red]Erro ao carregar mensagem de boas-vindas: {e}[/red]")
-            if self.debug:
-                console.print_exception()
+        
+        # Load interaction options template
+        welcome_file = Path(__file__).parent / "prompts" / "interaction_options.txt"
+        
+        if not welcome_file.exists():
+            console.print("[yellow]Arquivo de boas-vindas não encontrado.[/yellow]")
+            return
+        
+        with open(welcome_file, 'r', encoding='utf-8') as f:
+            welcome_template = f.read()
+        
+        # Replace {client_name} placeholder
+        welcome_message = welcome_template.replace("{client_name}", client_name)
+        
+        # Display with rich formatting
+        console.print()
+        console.print(Panel(
+            Markdown(welcome_message),
+            border_style="green",
+            padding=(1, 2),
+            title="[bold green]Bem-vindo![/bold green]",
+            subtitle="[dim]Comandos: /help | /exit[/dim]"
+        ))
+        console.print()
     
     def initialize_agent(self):
         """Initialize the planner agent."""

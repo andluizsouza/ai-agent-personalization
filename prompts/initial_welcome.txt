@@ -1,0 +1,13 @@
+# 🍺 BEES AI - Assistente de Reabastecimento Inteligente
+
+Olá! Bem-vindo ao seu assistente pessoal da BEES. 
+
+Estou aqui para ajudar você a descobrir novas cervejarias locais e gerenciar seus pedidos semanais de forma inteligente.
+
+
+**Comandos Especiais**:
+- `/exit` ou `/quit` - Sair do chat
+- `/clear` - Limpar histórico da conversa
+- `/log` - Mostrar Chain-of-Thought da última execução
+- `/metrics` - Mostrar métricas da sessão
+- `/help` - Mostrar esta ajuda
