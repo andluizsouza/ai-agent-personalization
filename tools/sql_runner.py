@@ -29,13 +29,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from langchain.chains import create_sql_query_chain
+from dotenv import load_dotenv
 from langchain_community.utilities import SQLDatabase
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.prompt_loader import load_prompt
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

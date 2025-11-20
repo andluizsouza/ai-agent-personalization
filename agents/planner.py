@@ -22,6 +22,7 @@ import time
 from typing import Dict, List, Optional
 from datetime import datetime
 
+from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
@@ -31,6 +32,9 @@ from tools.sql_runner import get_client_profile
 from tools.brewery_finder import search_breweries_by_location_and_type
 from tools.web_explorer import get_website_summary
 from utils.prompt_loader import load_prompt
+
+# Load environment variables from .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 

@@ -24,10 +24,11 @@ import signal
 from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.prompt import Prompt, Confirm
+from rich.prompt import Prompt
 from rich.markdown import Markdown
 
 # Add parent directory to path
@@ -36,6 +37,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from agents import create_planner_agent, PlannerAgent
 from utils.chat_session import ChatSession
 from utils.prompt_loader import load_prompt
+
+# Load environment variables from .env file
+load_dotenv()
 
 console = Console()
 

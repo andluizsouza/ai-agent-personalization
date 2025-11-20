@@ -31,10 +31,14 @@ import time
 from typing import Dict, Optional
 from urllib.parse import urlparse
 
+from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from utils.rag_manager import RAGManager
 from utils.prompt_loader import load_prompt
+
+# Load environment variables from .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
