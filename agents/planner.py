@@ -383,25 +383,32 @@ class PlannerAgent:
         try:
             logger.info(f"Starting planner execution for client: {client_id}")
             
-            # Filter chat history to get only the last user message
-            # This prevents the agent from being confused by previous responses
+            # Build input message with client_id context
             if chat_history:
-                # Get only the last user message
+                # Get the last user message
                 user_messages = [msg for msg in chat_history if msg.get("role") == "user"]
                 if user_messages:
                     last_user_message = user_messages[-1].get("content", "")
-                    # Build input with client_id context
-                    input_message = f"Client ID: {client_id}\n\nMensagem do usuário: {last_user_message}"
+                    input_message = last_user_message
                 else:
                     input_message = f"O client_id é: {client_id}. Execute o plano completo de 5 passos para fazer a recomendação."
             else:
                 input_message = f"O client_id é: {client_id}. Execute o plano completo de 5 passos para fazer a recomendação."
             
-            # Execute agent WITHOUT full history to avoid confusion
-            # The agent should focus on the current request with the confirmed client_id
+            # Format chat history for LangChain (converting to proper format)
+            from langchain_core.messages import HumanMessage, AIMessage
+            formatted_history = []
+            if chat_history:
+                for msg in chat_history[:-1]:  # Exclude the last message (it's in input)
+                    if msg.get("role") == "user":
+                        formatted_history.append(HumanMessage(content=msg.get("content", "")))
+                    elif msg.get("role") == "assistant":
+                        formatted_history.append(AIMessage(content=msg.get("content", "")))
+            
+            # Execute agent WITH full history to maintain context
             result = self.agent_executor.invoke({
-                "input": input_message,
-                "chat_history": []  # Empty history to prevent confusion
+                "input": f"Client ID: {client_id}\n\n{input_message}",
+                "chat_history": formatted_history
             })
             
             execution_time = time.time() - start_time
