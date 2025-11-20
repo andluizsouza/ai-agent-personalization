@@ -289,7 +289,7 @@ class SQLRunner:
         if client_id:
             try:
                 logger.info(f"Attempting search by client_id: {client_id}")
-                sql_query = self._generate_sql_query(client_id, "client_id")
+                sql_query = self._generate_query(client_id, "client_id")
                 logger.info(f"Generated SQL: {sql_query}")
                 result = self._execute_query(sql_query)
                 if result:
@@ -304,7 +304,7 @@ class SQLRunner:
                 logger.info(
                     f"Attempting fallback search by postal_code AND client_name: {postal_code} + {client_name}"
                 )
-                sql_query = self._generate_sql_query(
+                sql_query = self._generate_query(
                     search_input=None,
                     search_method="postal_code_and_name",
                     postal_code=postal_code,
