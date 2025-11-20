@@ -22,7 +22,6 @@ Benefits:
 - No web scraping needed
 - More reliable than BeautifulSoup
 - Grounding provides accurate, up-to-date information
-- 99% cost reduction with cache strategy
 """
 
 import logging
