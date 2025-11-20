@@ -174,7 +174,7 @@ class ConversationalCLI:
                     continue
                 
                 # Validate if client exists in database
-                console.print(f"\n[dim]✓ Verificando Client ID {client_id} na base...[/dim]")
+                console.print(f"\n[dim]Verificando Client ID {client_id} na base...[/dim]")
                 
                 from tools.sql_runner import get_client_profile
                 response = get_client_profile(client_id=client_id)
@@ -182,7 +182,7 @@ class ConversationalCLI:
                 # Check if client was found (result will be None if not found)
                 if not response.get('result'):
                     console.print(
-                        f"[red]✗ Client ID '{client_id}' não encontrado na base de dados.[/red]\n"
+                        f"[red]Client ID '{client_id}' não encontrado na base de dados.[/red]\n"
                         "[dim]Verifique se digitou corretamente ou entre em contato com o suporte.[/dim]\n"
                     )
                     continue
@@ -191,7 +191,7 @@ class ConversationalCLI:
                 client_data = response['result']
                 self.session.set_client_id(client_id)
                 console.print(
-                    f"\n[green]✓ Perfeito! Cliente identificado com sucesso.[/green]\n"
+                    f"\n[green]Perfeito! Cliente identificado com sucesso.[/green]\n"
                 )
                 
                 # Show personalized welcome message with capabilities
@@ -431,22 +431,22 @@ class ConversationalCLI:
                 sys.exit(0)
         else:
             # Client_id provided via argument - validate it
-            console.print(f"[dim]✓ Validando Client ID {self.client_id}...[/dim]")
+            console.print(f"[dim]Validando Client ID {self.client_id}...[/dim]")
             from tools.sql_runner import get_client_profile
             response = get_client_profile(client_id=self.client_id)
             
             # Check if client was found (result will be None if not found)
             if not response.get('result'):
                 console.print(
-                    f"[red]✗ Client ID '{self.client_id}' não encontrado na base de dados.[/red]\n"
-                    "[yellow]⚠ Verifique o Client ID e tente novamente.[/yellow]\n"
+                    f"[red]Client ID '{self.client_id}' não encontrado na base de dados.[/red]\n"
+                    "[yellow]Verifique o Client ID e tente novamente.[/yellow]\n"
                 )
                 sys.exit(1)
             
             # Extract client data from result
             client_data = response['result']
             console.print(
-                f"[green]✓ Cliente identificado com sucesso![/green]\n"
+                f"[green]Cliente identificado com sucesso![/green]\n"
             )
             self.session.set_client_id(self.client_id)
             

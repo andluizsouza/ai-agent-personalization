@@ -289,6 +289,6 @@ Aqui estão os detalhes sobre a **Dogfish Head Craft Brewery**:
 
 Posso ajudar com mais alguma coisa?
 
-**Assistente (ERRADO - NÃO FAÇA ISSO)**: ❌
+**Assistente (ERRADO - NÃO FAÇA ISSO)**:
 "Por favor, me diga qual cervejaria você gostaria de saber mais informações."
-← ISSO ESTÁ ERRADO! Você acabou de mencionar a Dogfish Head e o usuário disse "sim"!
+<- ISSO ESTÁ ERRADO! Você acabou de mencionar a Dogfish Head e o usuário disse "sim"!

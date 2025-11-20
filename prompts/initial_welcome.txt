@@ -1,4 +1,4 @@
-# 🍺 BEES AI - Assistente de Reabastecimento Inteligente
+# BEES AI - Assistente de Reabastecimento Inteligente
 
 Olá! Bem-vindo ao seu assistente pessoal da BEES. 
 
