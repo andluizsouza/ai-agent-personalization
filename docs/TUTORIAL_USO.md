@@ -138,6 +138,12 @@ Estou aqui para ajudar você a descobrir novas cervejarias locais personalizadas
 
 ---
 
+## Client IDs para Testes
+
+Para testar o agente BeerForYou, você deve usar códigos `client_id` reais que foram gerados para o seu banco de dados local. Esses códigos são gerados aleatoriamente, então você precisar consultar o seu banco e utilizar alguns desses códigos para executar os testes.
+
+---
+
 ## Exemplos de Perguntas
 
 O agente BeerForYou é capaz de responder diversos tipos de perguntas usando três ferramentas principais. Abaixo estão exemplos organizados por categoria.
@@ -257,24 +263,7 @@ Você: O que torna a Dogfish Head especial?
 [Solicitará permissão antes de buscar na web]
 ```
 
----
 
-## Client IDs para Testes
-
-O banco de dados foi criado com 20 clientes fictícios baseados em cervejarias reais. Aqui estão alguns client_ids que você pode usar para testar o sistema:
-
-| Client ID | Nome/Empresa | Localização | Tipo Principal |
-|-----------|--------------|-------------|----------------|
-| `CLT-HNG179` | 10 Barrel Brewing Co | Bend, Oregon | large |
-| `CLT-OMA295` | Against the Grain Brewery | Louisville, Kentucky | brewpub |
-| `CLT-LYO494` | Ballast Point Brewing Company | San Diego, California | large |
-| `CLT-MOD205` | Brooklyn Brewery | Brooklyn, New York | regional |
-| `CLT-NYR204` | Deschutes Brewery | Bend, Oregon | regional |
-| `CLT-CIR456` | Dogfish Head Craft Brewery | Milton, Delaware | regional |
-| `CLT-VYT050` | Founders Brewing Co | Grand Rapids, Michigan | regional |
-| `CLT-GCG585` | Great Lakes Brewing Company | Cleveland, Ohio | regional |
-| `CLT-WSD650` | Lagunitas Brewing Company | Petaluma, California | regional |
-| `CLT-UDT589` | New Belgium Brewing Company | Fort Collins, Colorado | regional |
 
 ---
 
